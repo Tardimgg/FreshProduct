@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".addProduct.createProduct.CreateProductFragment">
+
+    <ImageView
+        android:id="@+id/main_backgroundImage"
+        android:layout_width="match_parent"
+
+        android:layout_height="match_parent"
+
+        android:layout_alignParentTop="true"
+        android:alpha="0.07"
+        android:scaleType="centerCrop"
+
+        android:src="@drawable/second_back" />
+
+    <RelativeLayout
+        android:id="@+id/create_product_layout"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_title_product_layout"
+            style="@style/EditTextIconTint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:hint="@string/product_title"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/product_name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_title_product"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_subtitle_product_layout"
+            style="@style/EditTextIconTint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/input_title_product_layout"
+            android:layout_margin="10dp"
+            android:hint="@string/product_subtitle"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/product_name">
+
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_subtitle_product"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="3" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <TextView
+            android:id="@+id/message_about_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/input_subtitle_product_layout"
+            android:layout_margin="5dp"
+            android:text="Выберите срок годности" />
+
+        <DatePicker
+            android:id="@+id/expirationDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/message_about_date"
+
+            android:layout_centerHorizontal="true"
+            android:calendarViewShown="false"
+            android:datePickerMode="spinner" />
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/end_create_product"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="20dp"
+            android:backgroundTint="@color/orange"
+            android:src="@drawable/ok"
+            app:borderWidth="0dp" />
+        <!-- app:srcCompat="@drawable/ic_plus_24" !-->
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

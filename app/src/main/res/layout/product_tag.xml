@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="100dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?selectableItemBackground"
+    android:layout_margin="15dp"
+    style="@style/CardView.Light">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+    <ImageView
+        android:id="@+id/image_product"
+
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_outline_food_bank_24"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_margin="5dp"
+        android:minWidth="30dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_toEndOf="@id/image_product"
+        android:id="@+id/all_description"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/main_product_tag"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_width="wrap_content"
+            android:layout_marginEnd="35dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/sub_title"
+            style="@style/TextAppearance.MaterialComponents.Caption"
+            android:layout_marginEnd="60dp"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+        <!--
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/delete_button"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/delete"
+        android:textSize="15sp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/expiration_date"
+        android:layout_alignParentBottom="true" />
+        -->
+
+    <TextView
+        android:id="@+id/expiration_date"
+        android:layout_margin="5dp"
+        android:layout_gravity="right|top"
+        android:layout_alignParentEnd="true"
+        android:gravity="center"
+        android:background="@drawable/circle_background"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif"
+        android:textSize="15sp"
+        android:elevation="10dp"/>
+
+    </RelativeLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

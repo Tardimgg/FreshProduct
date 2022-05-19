@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">FreshProduct</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="delete">Удалить</string>
+    <string name="end_photo">Завершить</string>
+    <string name="product_title">Тип</string>
+    <string name="product_subtitle">Наименование</string>
+</resources>
