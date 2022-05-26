@@ -16,7 +16,6 @@ public class Product {
     @ColumnInfo(name = "right_node_id")
     public long rightNodeId;
 
-
     @ColumnInfo(name = "image_drawable")
     public int imageDrawable;
 
@@ -29,5 +28,10 @@ public class Product {
     @ColumnInfo(name = "expiration_date")
     public long expirationDate;
 
+    @ColumnInfo(name = "start_tracking_date")
+    public long startTrackingDate;
+
+    @ColumnInfo(name = "last_notification_date")
+    public long lastNotificationDate;
 
 }

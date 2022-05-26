@@ -43,6 +43,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+
         ArrayList<NotificationTime> workingTime = new ArrayList<>();
         if (intent != null) {
             Bundle bundle = intent.getParcelableExtra(WORKING_TIME_BUNDLE);
@@ -64,12 +65,16 @@ public class NotificationReceiver extends BroadcastReceiver {
                     @Override
                     public void onSuccess(List<Product> products) {
 
-                        Date currentDate = new Date();
+                        long currentTime = new Date().getTime();
 
                         for (Product product : products) {
 
-                            double delta = Math.floor((double) ((product.expirationDate - currentDate.getTime()) / 1000 / 60 / 60) / 24);
-                            if (delta < 5) {
+                            double delta = Math.floor((double) ((product.expirationDate - currentTime) / 1000 / 60 / 60) / 24);
+                            if (delta < 5 || checkingForNeedEarlyNotification(currentTime, product)){
+
+                                RoomDB.getInstance(context)
+                                        .productDao()
+                                        .updateLastNotificationDate(product.uid, currentTime);
 
                                 NotificationCompat.Builder builder =
                                         new NotificationCompat.Builder(context, CHANNEL_ID)
@@ -93,6 +98,16 @@ public class NotificationReceiver extends BroadcastReceiver {
 
                     @Override
                     public void onError(Throwable e) {
+
+                    }
+
+                    private boolean checkingForNeedEarlyNotification(long currentTime, Product product) {
+                        if ((product.expirationDate >> 1) + (product.startTrackingDate >> 1) <= currentTime) {
+                            long timeDelta = product.expirationDate - product.startTrackingDate;
+                            return currentTime - product.lastNotificationDate > 0.15 * timeDelta;
+                        }
+                        return false;
+
 
                     }
                 });

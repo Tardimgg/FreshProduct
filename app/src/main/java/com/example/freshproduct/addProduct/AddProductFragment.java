@@ -22,6 +22,7 @@ import com.example.freshproduct.addProduct.makePhoto.CompletingPhotoMakingListen
 import com.example.freshproduct.addProduct.makePhoto.MakePhotoFragment;
 import com.example.freshproduct.addProduct.makePhoto.ProductReadingListener;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -124,12 +125,16 @@ public class AddProductFragment extends Fragment implements CompletingPhotoMakin
                 .subscribe(new DisposableSingleObserver<List<Long>>() {
                     @Override
                     public void onSuccess(List<Long> uid) {
+                        Date currentDate = new Date();
+
                         Product product = new Product();
                         product.productTitle = title;
                         product.productSubtitle = subtitle;
                         product.expirationDate = expirationDate;
                         product.leftNodeId = uid.size() == 0 ? -1 : uid.get(0);
                         product.rightNodeId = -1;
+                        product.startTrackingDate = currentDate.getTime();
+                        product.lastNotificationDate = currentDate.getTime();
 
                         new Thread(() -> {
                             long[] newIds = RoomDB.getInstance(getContext()).productDao().insertAll(product);

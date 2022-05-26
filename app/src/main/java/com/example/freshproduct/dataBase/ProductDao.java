@@ -23,12 +23,14 @@ public interface ProductDao {
     @Query("Update product SET `left_node_id` = :newLeftNodeId, `right_node_id` = :newRightNodeId WHERE uid = :uid")
     void updatePosition(long uid, long newLeftNodeId, long newRightNodeId);
 
-
     @Query("Update product SET `left_node_id` = :newLeftNodeId WHERE uid = :uid")
     void updateLeftNode(long uid, long newLeftNodeId);
 
     @Query("Update product SET `right_node_id` = :newRightNodeId WHERE uid = :uid")
     void updateRightNode(long uid, long newRightNodeId);
+
+    @Query("Update product SET `last_notification_date` = :newLastNotificationDate WHERE uid = :uid")
+    void updateLastNotificationDate(long uid, long newLastNotificationDate);
 
     @Query("SELECT uid FROM product WHERE right_node_id = -1")
     Single<List<Long>> getLastNodeId();
