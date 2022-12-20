@@ -1,13 +1,9 @@
-package com.example.freshproduct.dataBase;
+package com.example.freshproduct.models;
 
 import androidx.room.ColumnInfo;
-import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import java.io.Serializable;
-
-@Entity
-public class Product implements Serializable {
+public class MinimalProduct {
 
     @PrimaryKey(autoGenerate = true)
     public long uid;
@@ -30,19 +26,6 @@ public class Product implements Serializable {
     @ColumnInfo(name = "expiration_date")
     public long expirationDate;
 
-    @ColumnInfo(name = "start_tracking_date")
-    public long startTrackingDate;
-
-    @ColumnInfo(name = "last_notification_date")
-    public long lastNotificationDate;
-
-    @ColumnInfo(name = "sync")
-    public boolean sync;
-
     @ColumnInfo(name = "deleted")
     public boolean deleted;
-
-    @ColumnInfo(name = "localOnly")
-    public boolean localOnly;
-
 }

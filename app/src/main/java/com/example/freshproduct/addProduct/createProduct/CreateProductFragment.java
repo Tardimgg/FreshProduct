@@ -2,20 +2,27 @@ package com.example.freshproduct.addProduct.createProduct;
 
 import android.os.Bundle;
 
-import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.DatePicker;
 
+import com.example.freshproduct.GlobalInsets;
 import com.example.freshproduct.databinding.FragmentCreateProductBinding;
 
-import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import io.reactivex.disposables.Disposable;
 
 public class CreateProductFragment extends Fragment {
 
@@ -31,8 +38,17 @@ public class CreateProductFragment extends Fragment {
     private long initTime;
     private CompletingCreateProductListener completingCreateProductListener;
 
-    private static WindowInsetsCompat insetsLayout;
+    Disposable insetsListener;
 
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (insetsListener != null) {
+            insetsListener.dispose();
+        }
+    }
 
     public CreateProductFragment() {
         // Required empty public constructor
@@ -60,9 +76,7 @@ public class CreateProductFragment extends Fragment {
         }
     }
 
-    public void setInsets(WindowInsetsCompat insets) {
-        CreateProductFragment.insetsLayout = insets;
-    }
+    private boolean changedTime = false;
 
 
     @Override
@@ -82,43 +96,72 @@ public class CreateProductFragment extends Fragment {
             actionBarHeight = 0;
         }
 
-        if (insetsLayout != null) {
-            binding.createProductLayout.setTranslationY(actionBarHeight >> 1);
-            binding.createProductLayout.setTranslationX(insetsLayout.getSystemWindowInsets().right);
+        insetsListener = GlobalInsets.getInstance().subscribeToInsets(insets -> {
 
-            binding.endCreateProduct.setTranslationY(-insetsLayout.getSystemWindowInsets().bottom << 1);
-            binding.endCreateProduct.setTranslationX(-insetsLayout.getSystemWindowInsets().right << 1);
+            binding.createProductLayout.setTranslationY(actionBarHeight >> 1);
+            binding.createProductLayout.setTranslationX(insets.getSystemWindowInsets().right);
+
+            binding.endCreateProduct.setTranslationY(-(actionBarHeight >> 1) - insets.getSystemWindowInsets().bottom);
+//            binding.endCreateProduct.setTranslationY(-insets.getSystemWindowInsets().bottom << 1);
+//            binding.endCreateProduct.setTranslationX(-insets.getSystemWindowInsets().right);
+//            binding.endCreateProduct.setTranslationX(-insets.getSystemWindowInsets().right << 1);
 
 //            binding.mainBackgroundImage.setTranslationY(-insetsLayout.getSystemWindowInsets().bottom);
 //            binding.mainBackgroundImage.setTranslationX(-insetsLayout.getSystemWindowInsets().right);
-        }
+
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.createProductLayout, (v, insets) -> {
+            GlobalInsets.getInstance().setInsets(insets);
+            return insets;
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.endCreateProduct, (v, insets) -> {
+            GlobalInsets.getInstance().setInsets(insets);
+            return insets;
+        });
+
+
         binding.editTitleProduct.setText(title);
         binding.editSubtitleProduct.setText(subtitle);
-        if (initTime != -1) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(initTime);
-            binding.expirationDate.updateDate(calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH));
-        }
+        Calendar calendar = Calendar.getInstance();
 
-        binding.endCreateProduct.setOnClickListener((v) -> {
-            String currentTitle = binding.inputTitleProductLayout.getEditText().getText().toString();
-            String currentSubtitle = binding.inputSubtitleProductLayout.getEditText().getText().toString();
-            boolean isNotEmpty = true;
-            if (currentTitle.isEmpty()) {
-                binding.inputTitleProductLayout.setError("Обязательное поле");
-                isNotEmpty = false;
-            } if (currentSubtitle.isEmpty()) {
-                binding.inputSubtitleProductLayout.setError("Обязательное поле");
-                isNotEmpty = false;
-            }
-            if (isNotEmpty && completingCreateProductListener != null) {
-                int year = binding.expirationDate.getYear();
-                int month = binding.expirationDate.getMonth();
-                int day = binding.expirationDate.getDayOfMonth();
-                Date date = new GregorianCalendar(year, month, day + 1).getTime();
-                completingCreateProductListener.completingCreateProductEvent(currentTitle, currentSubtitle, date.getTime());
+        if (initTime != -1) {
+            calendar.setTimeInMillis(initTime);
+//            binding.expirationDate.updateDate(calendar.get(Calendar.YEAR),
+//                    calendar.get(Calendar.MONTH),
+//                    calendar.get(Calendar.DAY_OF_MONTH));
+        }
+        binding.expirationDate.init(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH), (datePicker, year, month, dayOfMonth) -> changedTime = true);
+
+        binding.endCreateProduct.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public synchronized void onClick(View view) {
+                binding.endCreateProduct.setEnabled(false);
+                String currentTitle = binding.inputTitleProductLayout.getEditText().getText().toString();
+                String currentSubtitle = binding.inputSubtitleProductLayout.getEditText().getText().toString();
+                boolean isNotEmpty = true;
+                if (currentTitle.isEmpty()) {
+                    binding.inputTitleProductLayout.setError("Обязательное поле");
+                    isNotEmpty = false;
+                } if (currentSubtitle.isEmpty()) {
+                    binding.inputSubtitleProductLayout.setError("Обязательное поле");
+                    isNotEmpty = false;
+                }
+                if (isNotEmpty && completingCreateProductListener != null) {
+
+                    if (initTime != -1 || changedTime) {
+
+                        int year = binding.expirationDate.getYear();
+                        int month = binding.expirationDate.getMonth();
+                        int day = binding.expirationDate.getDayOfMonth();
+                        Date date = new GregorianCalendar(year, month, day + 1).getTime();
+                        completingCreateProductListener.completingCreateProductEvent(currentTitle, currentSubtitle, date.getTime());
+                    } else {
+                        completingCreateProductListener.completingCreateProductEvent(currentTitle, currentSubtitle, -1);
+                    }
+                }
             }
         });
 

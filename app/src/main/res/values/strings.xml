@@ -6,4 +6,15 @@
     <string name="end_photo">Завершить</string>
     <string name="product_title">Тип</string>
     <string name="product_subtitle">Наименование</string>
+    <string name="entrance">Вход</string>
+    <string name="without_registration">Продолжить без регистрации</string>
+    <string name="registration">Регистрация</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="password_repetition">Повторите пароль</string>
+    <string name="password_mismatch">Пароли не совпадают</string>
+    <string name="empty_fields">Все поля должны быть заполнены</string>
+    <string name="missing_products">Продуктов нет</string>
+
 </resources>

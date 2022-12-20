@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/android_lar"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <ImageView
+        android:id="@+id/auth_backgroundImage"
+        android:layout_width="match_parent"
+
+        android:layout_height="match_parent"
+
+        android:layout_alignParentTop="true"
+        android:alpha="0.3"
+        android:scaleType="centerCrop"
+
+        android:src="@drawable/auth_logo" />
+
+    <TextView
+        android:id="@+id/logo_name"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="45dp"
+        android:text="@string/app_name"
+        android:textColor="#000000"
+        android:textSize="25sp" />
+
+
+    <ImageView
+        android:id="@+id/arbuz"
+        android:layout_width="84dp"
+        android:layout_height="41dp"
+
+        android:layout_below="@id/logo_name"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/arbuz" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/enter_auth_data"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="5dp"
+        android:gravity="top"
+        android:text="@string/registration"
+        android:textColor="#000000"
+        android:textSize="25sp" />
+
+    <RelativeLayout
+
+        android:id="@+id/enter_auth_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical">
+
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="21dp"
+            android:layout_marginEnd="49dp"
+            android:hint="@string/login"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/login_logo"
+            app:boxStrokeColor="@null"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/rounded_top"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/password"
+            android:layout_below="@id/login"
+            android:layout_marginStart="21dp"
+            android:layout_marginEnd="49dp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="@string/password"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/password_logo"
+            app:boxStrokeColor="@null"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp">
+
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/rounded_bottom"
+                android:inputType="textNoSuggestions"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/password_repetition"
+            android:layout_below="@id/password"
+            android:layout_marginStart="21dp"
+            android:layout_marginEnd="49dp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="@string/password_repetition"
+            app:errorEnabled="true"
+            app:startIconDrawable="@drawable/password_logo"
+            app:boxStrokeColor="@null"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp">
+
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/rounded_bottom"
+                android:inputType="textNoSuggestions"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/auth"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_alignEnd="@id/password"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="-28dp"
+            android:backgroundTint="@color/orange"
+            android:src="@drawable/next"
+            app:backgroundTint="@color/black"
+            app:borderWidth="1dp" />
+
+
+
+
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/registration"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_above="@id/without_registration"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/circled_btn"
+        android:elevation="4dp"
+        android:text="@string/registration"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+
+        android:textSize="16sp"
+        app:backgroundTint="@null" />
+
+    <Button
+        android:id="@+id/without_registration"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/circled_btn"
+        android:elevation="4dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:text="@string/without_registration"
+
+        android:textAllCaps="false"
+
+
+        android:textColor="#000000"
+        android:textSize="16sp"
+        app:backgroundTint="@null" />
+
+
+
+
+</RelativeLayout>

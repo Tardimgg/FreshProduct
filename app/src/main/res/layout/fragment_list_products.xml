@@ -21,13 +21,35 @@
         android:alpha="0.3"
         android:src="@drawable/back" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/empty_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:textSize="20sp"
-        android:text="Вы пока ещё не добавили ни одного продукта" />
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:visibility="invisible">
+
+
+        <ImageView
+            android:id="@+id/empty_list_image"
+
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_gravity="center_horizontal"
+
+            android:scaleType="centerInside"
+            android:src="@drawable/zhdun" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center_horizontal"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:text="@string/missing_products" />
+
+    </LinearLayout>
 
 
 

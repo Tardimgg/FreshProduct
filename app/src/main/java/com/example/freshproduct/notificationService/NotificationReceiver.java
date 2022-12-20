@@ -70,7 +70,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                         for (Product product : products) {
 
                             double delta = Math.floor((double) ((product.expirationDate - currentTime) / 1000 / 60 / 60) / 24);
-                            if (delta < 5 || checkingForNeedEarlyNotification(currentTime, product)){
+                            if ((delta < 5 || checkingForNeedEarlyNotification(currentTime, product)) && delta > -5){
 
                                 RoomDB.getInstance(context)
                                         .productDao()

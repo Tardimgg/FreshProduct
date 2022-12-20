@@ -17,7 +17,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
@@ -32,13 +32,17 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
+import com.example.freshproduct.GlobalInsets;
+import com.example.freshproduct.R;
 import com.example.freshproduct.Result;
 import com.example.freshproduct.databinding.FragmentMakePhotoBinding;
+import com.example.freshproduct.models.ArrayResponse;
+import com.example.freshproduct.models.Receipt;
 import com.example.freshproduct.productInfoLoader.ProductInfoLoader;
+import com.example.freshproduct.webApi.SingleWebApi;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
@@ -50,7 +54,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
 
 public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAvailableListener {
 
@@ -59,15 +68,16 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
     private static final String PHOTO_MAKING_PARAM = "PHOTO_MAKING_PARAM";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     FragmentMakePhotoBinding binding;
-    private static WindowInsetsCompat insetsBtn;
     private boolean requiredStopWorking = false;
     private Toast toast;
 
 
-    // TODO: Rename and change types of parameters
     private ProductReadingListener productReadingListener;
     private CompletingPhotoMakingListener completingPhotoMakingListener;
     private ImageReader imageReader;
+
+    Disposable insetsListener;
+
 
     public MakePhotoFragment() {
         // Required empty public constructor
@@ -101,8 +111,13 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
         }
     }
 
-    public void setInsets(WindowInsetsCompat insets) {
-        MakePhotoFragment.insetsBtn = insets;
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (insetsListener != null) {
+            insetsListener.dispose();
+        }
     }
 
 
@@ -111,10 +126,17 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
                              Bundle savedInstanceState) {
         binding = FragmentMakePhotoBinding.inflate(inflater, container, false);
 
-        if (insetsBtn != null) {
-            binding.endPhotoMaking.setTranslationY(-insetsBtn.getSystemWindowInsets().bottom);
-            binding.endPhotoMaking.setTranslationX(-insetsBtn.getSystemWindowInsets().right);
-        }
+        insetsListener = GlobalInsets.getInstance().subscribeToInsets(insets -> {
+
+            binding.endPhotoMaking.setTranslationY(-insets.getSystemWindowInsets().bottom);
+            binding.endPhotoMaking.setTranslationX(-insets.getSystemWindowInsets().right);
+
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.endPhotoMaking, (v, insets) -> {
+            GlobalInsets.getInstance().setInsets(insets);
+            return insets;
+        });
 
         binding.endPhotoMaking.setOnClickListener((v) -> {
             if (completingPhotoMakingListener != null) {
@@ -239,6 +261,7 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
                     @Override
                     public void onOpened(@NonNull CameraDevice cameraDevice) {
                         imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 2);
+//                        imageReader = ImageReader.newInstance(720, 1280, ImageFormat.YUV_420_888, 2);
                         imageReader.setOnImageAvailableListener(MakePhotoFragment.this, backgroundCameraHandler);
                         if (binding.cameraView.isAvailable()) {
                             configureCamera(cameraDevice, binding.cameraView.getSurfaceTexture(), focusDistance);
@@ -282,6 +305,8 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
     }
 
     private void configureCamera(CameraDevice cameraDevice, SurfaceTexture texture, float focusDistance) {
+//        texture.setDefaultBufferSize(1280, 1280);
+//        texture.setDefaultBufferSize(720, 1280);
         texture.setDefaultBufferSize(1280, 720);
         Surface surface = new Surface(texture);
 
@@ -304,7 +329,8 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
                             try {
                                 cameraCaptureSession.setRepeatingRequest(builder.build(),
                                         null, backgroundCameraHandler);
-                            } catch (CameraAccessException e) {
+                            } catch (CameraAccessException | IllegalArgumentException e) {
+                                Toast.makeText(getContext(), "camera error", Toast.LENGTH_LONG).show();
                                 e.printStackTrace();
                             }
                         }
@@ -318,6 +344,16 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
             e.printStackTrace();
         }
     }
+
+    Pattern fnPattern = Pattern.compile("fn=(.+?)&");
+    Pattern fdPattern = Pattern.compile("i=(.+?)&");
+    Pattern fpPattern = Pattern.compile("fp=(.+?)&");
+    Pattern totalSumPattern = Pattern.compile("s=(.+?)&");
+    Pattern datePattern = Pattern.compile("t=(.+?)T");
+    Pattern timePattern = Pattern.compile("T(.+?)&");
+
+
+    Pattern firstWordPattern = Pattern.compile("(.+?\\s)");
 
 
     private boolean inWork = false;
@@ -341,11 +377,11 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
             if (image != null) {
 
                 BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(Barcode.FORMAT_EAN_13).build();
+                        .setBarcodeFormats(Barcode.FORMAT_EAN_13, Barcode.FORMAT_QR_CODE).build();
                 BarcodeScanner scanner = BarcodeScanning.getClient(options);
                 scanner.process(InputImage.fromMediaImage(image, 0)).addOnCompleteListener(task -> {
                     List<Barcode> list = task.getResult();
-                    if (list.size() > 0) {
+                    if (list.size() > 0 && list.get(0).getRawValue() != null) {
 
                         if (blockingPhotoCreations) {
                             if (toast != null) {
@@ -357,41 +393,179 @@ public class MakePhotoFragment extends Fragment implements ImageReader.OnImageAv
 
                         } else {
                             requireView().playSoundEffect(SoundEffectConstants.CLICK);
-                            new ProductInfoLoader(res -> {
 
-                                blockingPhotoCreations = true;
-                                lastRes = res;
+                            Barcode barcode = list.get(0);
 
-                                if (toast != null) {
-                                    toast.cancel();
-                                }
-                                if (res.isHaveValue) {
-                                    if (res.value.first.isEmpty()) {
-                                        toast = Toast.makeText(getContext(), res.value.second, Toast.LENGTH_SHORT);
-                                    } else {
-                                        toast = Toast.makeText(getContext(), res.value.first, Toast.LENGTH_SHORT);
+                            switch (barcode.getFormat()) {
+                                case Barcode.FORMAT_QR_CODE:
+                                    String qr = barcode.getRawValue();
+
+                                    Matcher fnMatcher = fnPattern.matcher(qr);
+                                    boolean fnRes = fnMatcher.find();
+
+                                    Matcher fdMatcher = fdPattern.matcher(qr);
+                                    boolean fdRes = fdMatcher.find();
+
+                                    Matcher fpMatcher = fpPattern.matcher(qr);
+                                    boolean fpRes = fpMatcher.find();
+
+                                    Matcher totalSumMatcher = totalSumPattern.matcher(qr);
+                                    boolean totalSumRes = totalSumMatcher.find();
+
+                                    Matcher dateMatcher = datePattern.matcher(qr);
+                                    boolean dateRes = dateMatcher.find();
+
+                                    Matcher timeMatcher = timePattern.matcher(qr);
+                                    boolean timeRes = timeMatcher.find();
+
+                                    if (fnRes && fdRes && fpRes && totalSumRes && dateRes && timeRes) {
+                                        Receipt receipt = new Receipt();
+
+                                        receipt.fn_param = fnMatcher.group(1);
+                                        receipt.fd = fdMatcher.group(1);
+                                        receipt.fp = fpMatcher.group(1);
+                                        receipt.total_sum = totalSumMatcher.group(1);
+
+                                        String date = dateMatcher.group(1);
+
+                                        receipt.date = String.format("%s.%s.%s", date.substring(6), date.substring(4, 6), date.substring(0, 4));
+
+                                        String time = timeMatcher.group(1);
+                                        receipt.time = String.format("%s:%s", time.substring(0, 2), time.substring(2, 4));
+
+                                        receipt.receipt_type = "Приход";
+
+                                        SingleWebApi.getInstance().getReceiptInfo(receipt)
+                                                .subscribeOn(Schedulers.newThread())
+                                                .observeOn(Schedulers.io())
+                                                .subscribe(new DisposableSingleObserver<ArrayResponse>() {
+                                                    @Override
+                                                    public void onSuccess(ArrayResponse arrayResponse) {
+                                                        for (String receipt : arrayResponse.response) {
+
+                                                            Matcher matcher = firstWordPattern.matcher(receipt);
+                                                            if (matcher.find()) {
+                                                                productReadingListener.productReadyEvent(
+                                                                        Result.some(Pair.create(matcher.group(1), receipt)), -1
+                                                                );
+                                                            }
+                                                        }
+
+                                                        Log.e("load receipt info", arrayResponse.response.get(0));
+                                                        inWork = false;
+                                                        afterDownloadProcess = true;
+                                                        endTime = System.nanoTime();
+
+                                                        requireActivity().runOnUiThread(() -> {
+                                                            binding.loadInfo.setVisibility(View.INVISIBLE);
+                                                            binding.loadReceiptInfoBar.setVisibility(View.INVISIBLE);
+
+                                                            binding.loadReceiptOk.setImageResource(R.drawable.ok);
+                                                            binding.loadReceiptOk.setVisibility(View.VISIBLE);
+
+                                                            binding.loadReceiptInfo.animate()
+                                                                    .setStartDelay(600)
+                                                                    .withStartAction(() -> binding.loadReceiptInfo.setVisibility(View.VISIBLE))
+                                                                    .alpha(0f)
+                                                                    .setInterpolator(new AccelerateDecelerateInterpolator())
+                                                                    .setDuration(300)
+                                                                    .start();
+
+                                                            binding.loadReceiptOk.animate()
+                                                                    .setStartDelay(900)
+                                                                    .withStartAction(() -> binding.loadReceiptOk.setVisibility(View.INVISIBLE))
+                                                                    .start();
+
+
+                                                            binding.loadInfo.setText(null);
+                                                        });
+
+                                                    }
+
+                                                    @Override
+                                                    public void onError(Throwable e) {
+                                                        requireActivity().runOnUiThread(() -> {
+                                                            Toast.makeText(getContext(), "Попробуйте в следующий раз", Toast.LENGTH_LONG).show();
+                                                            Log.e("load receipt info", e.toString());
+                                                            inWork = false;
+                                                            afterDownloadProcess = true;
+                                                            endTime = System.nanoTime();
+
+                                                            binding.loadInfo.setVisibility(View.INVISIBLE);
+                                                            binding.loadReceiptInfoBar.setVisibility(View.INVISIBLE);
+
+                                                            binding.loadReceiptOk.setImageResource(R.drawable.error);
+                                                            binding.loadReceiptOk.setVisibility(View.VISIBLE);
+
+                                                            binding.loadReceiptInfo.animate()
+                                                                    .setStartDelay(600)
+                                                                    .withStartAction(() -> binding.loadReceiptInfo.setVisibility(View.VISIBLE))
+                                                                    .alpha(0f)
+                                                                    .setInterpolator(new AccelerateDecelerateInterpolator())
+                                                                    .setDuration(300)
+                                                                    .start();
+
+                                                            binding.loadReceiptOk.animate()
+                                                                    .setStartDelay(900)
+                                                                    .withStartAction(() -> binding.loadReceiptOk.setVisibility(View.INVISIBLE))
+                                                                    .start();
+
+
+                                                            binding.loadInfo.setText(null);
+
+                                                        });
+                                                    }
+                                                });
                                     }
-                                } else {
-                                    toast = Toast.makeText(getContext(), res.error, Toast.LENGTH_SHORT);
-                                }
-                                toast.show();
+                                    binding.loadReceiptInfoBar.setVisibility(View.VISIBLE);
+                                    binding.loadInfo.setVisibility(View.VISIBLE);
+                                    binding.loadReceiptInfo.animate()
+                                            .withStartAction(() -> binding.loadReceiptInfo.setVisibility(View.VISIBLE))
+                                            .alpha(1f)
+                                            .setInterpolator(new AccelerateDecelerateInterpolator())
+                                            .setDuration(300)
+                                            .start();
+
+                                    binding.loadInfo.setText("Загрузка чека");
+
+                                    break;
+                                case Barcode.FORMAT_EAN_13:
+                                    new ProductInfoLoader(res -> {
+
+                                        blockingPhotoCreations = true;
+                                        lastRes = res;
+
+                                        if (toast != null) {
+                                            toast.cancel();
+                                        }
+                                        if (res.isHaveValue) {
+                                            if (res.value.first.isEmpty()) {
+                                                toast = Toast.makeText(getContext(), res.value.second, Toast.LENGTH_SHORT);
+                                            } else {
+                                                toast = Toast.makeText(getContext(), res.value.first, Toast.LENGTH_SHORT);
+                                            }
+                                        } else {
+                                            toast = Toast.makeText(getContext(), res.error, Toast.LENGTH_SHORT);
+                                        }
+                                        toast.show();
 
 
-                                Calendar calendar = Calendar.getInstance();
-                                calendar.setTimeInMillis(System.currentTimeMillis());
-                                binding.expirationDate.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-                                binding.expirationDate.animate()
-                                        .withStartAction(() -> binding.expirationDate.setVisibility(View.VISIBLE))
-                                        .alpha(1f)
-                                        .setInterpolator(new AccelerateDecelerateInterpolator())
-                                        .setDuration(300)
-                                        .start();
+                                        Calendar calendar = Calendar.getInstance();
+                                        calendar.setTimeInMillis(System.currentTimeMillis());
+                                        binding.expirationDate.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+                                        binding.expirationDate.animate()
+                                                .withStartAction(() -> binding.expirationDate.setVisibility(View.VISIBLE))
+                                                .alpha(1f)
+                                                .setInterpolator(new AccelerateDecelerateInterpolator())
+                                                .setDuration(300)
+                                                .start();
 
-                                inWork = false;
-                                afterDownloadProcess = true;
-                                endTime = System.nanoTime();
+                                        inWork = false;
+                                        afterDownloadProcess = true;
+                                        endTime = System.nanoTime();
 
-                            }).execute(list.get(0).getDisplayValue());
+                                    }).execute(barcode.getDisplayValue());
+                            }
                         }
 
                     } else {

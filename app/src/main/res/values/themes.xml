@@ -64,6 +64,10 @@
     <style name="Theme.Calendar" parent="Widget.Material3.MaterialCalendar">
         <item name="colorSecondary">@color/orange</item>
 
-
     </style>
+
+    <style name="MyGreenButton">
+        <item name="colorButtonNormal">#009900</item>
+    </style>
+
 </resources>

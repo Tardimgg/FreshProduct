@@ -13,10 +13,10 @@ public class Result <T, E> {
     }
 
     public static <T1, E1> Result<T1, E1> some(T1 value) {
-        return new Result<T1, E1>(value, null);
+        return new Result<>(value, null);
     }
 
     public static <T1, E1> Result<T1, E1> error(E1 error) {
-        return new Result<T1, E1>(null, error);
+        return new Result<>(null, error);
     }
 }
