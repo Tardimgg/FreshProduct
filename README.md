@@ -21,6 +21,6 @@
 </div>
 <div align="center">
   <img src="https://github.com/Tardimgg/FreshProduct/raw/master/images/lw_scanning_receipt.png" alt="centered image" width="33%">
-  <img src="https://github.com/Tardimgg/FreshProduct/raw/master/images/lw_add_manually.png" alt="centered image" width="33%">
   <img src="https://github.com/Tardimgg/FreshProduct/raw/master/images/lw_make_photo.png" alt="centered image" width="33%">
+  <img src="https://github.com/Tardimgg/FreshProduct/raw/master/images/lw_add_manually.png" alt="centered image" width="33%">
 </div>
